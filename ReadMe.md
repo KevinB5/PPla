@@ -24,3 +24,7 @@ Código:
 "sondagem.iterativa"
 "ILDS"
 "abordagem.alternativa"
+
+Código encontrado:
+https://github.com/nunofmaia/sokoban/blob/master/procuras.lisp
+https://github.com/antoniovilarinholopes/Lisp-Searches
