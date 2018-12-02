@@ -7,6 +7,7 @@ Documento:
 - Estratégias de Corte
 
 Código:
+- Adicionar Algoritmos 
 - Modificar estrutura
 - Adicionar Heurísticas
 - Estratégias de Corte
