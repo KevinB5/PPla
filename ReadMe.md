@@ -5,6 +5,7 @@ Documento:
 - Atualizar a Estrutura de Dados
 - Heuristicas Desenvolvidas
 - Estratégias de Corte
+- Gráficos???? Enunciado pede
 
 Código:
 - Adicionar Algoritmos 
