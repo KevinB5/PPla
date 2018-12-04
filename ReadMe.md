@@ -10,6 +10,11 @@ profundidade atingida, etc.
 
 Implementação
 - Estratégias de Corte
+- Operador 
+- Verificar restriçoes 
+- Testar algoritmos e heuristicas e escolher melhor abordagem e heuristica
+- Tempo e espaço
+- Custo (duraçao turno)
 
 "melhor.abordagem"
 "a*.melhor.heuristica"
