@@ -9,33 +9,40 @@
   tasks
   duration
   lastPoint
-  mealBreak
+  mealBrake
   )
 
 (defun shiftDuration (shift)
-  (print (shift-tasks shift))
-  (print (nth (- (list-length (shift-tasks shift)) 1) (shift-tasks shift)))
-  (- (nth 3  (last (nth (- (list-length (shift-tasks shift)) 1) (shift-tasks shift)))) (nth 2 (first (shift-tasks shift))))
-  )
+  (let ((duration 0))
+  (if (equal (list-length (shift-tasks shift)) 1)
+    (setf duration (- (nth 3 (first (shift-tasks shift))) (nth 2 (first (shift-tasks shift)))))
+    (setf duration (- (nth 3 (nth (- (list-length (shift-tasks shift)) 1) (shift-tasks shift))) (nth 2 (first (shift-tasks shift)))))
+    )
+    duration))
 
 (defun makeShift (tasks)
   (let ((ini (make-shift :tasks '()
                         :duration 0
                         :lastPoint "L"
                         :mealBrake nil)))
-        (setf (shift-tasks ini) (list tasks))
+        (setf (shift-tasks ini) tasks)
         (setf (shift-duration ini) (shiftDuration ini))
-        (print 1)
-        (setf (shift-lastPoint ini) (nth 1 (last (shift-tasks ini))))
-        (print 2)
+        (setf (shift-lastPoint ini) (nth 1 (nth (- (list-length (shift-tasks ini)) 1) (shift-tasks ini))))
         ;(setf (shift-mealBrake ini) (hadMealBreak (shift-tasks ini)))
   ini))
 
+(defun addTask (shift task)
+  (let ((aux shift))
+        (cons (shift-tasks aux) (list task))
+  (print aux)
+    aux)
+  )
 
-(defun makeState (shifts tasks)
-  (let ((ini (make-state :shifts shifts :unusedTasks tasks)))
-  ini))
-
+(defun addShift (state task)
+  (let ((aux state))
+        (append (state-shifts aux) (makeShift (list task)))
+  aux)
+  )
 (defun makeInitialState (tasks)
   (let ((ini (make-state :shifts (list ()) :unusedTasks tasks)))
   ini))
@@ -43,23 +50,22 @@
 
 ; (defun hadMealBreak (tasks)
 ;   ;for all in tasks
-;   ;   if endingTime - startingTime = 40
+;   ;   if endingTime - startingTime = 40 && startingPoint == endingPoint
 ;   ;       true
 ;   ;   false
 ;   )
 
 (defun operator (state)
   (let ((auxState state))
-      (let((auxTask (state-unusedTasks auxState))
+      (let((auxTasks (state-unusedTasks auxState))
       (auxShift  (last (state-shifts auxState))))
 
   (push (list (first auxTask)) auxShift)
   (setf (state-shifts auxState) auxShift)
   (setf (state-unusedTasks auxState) (rest auxTask))
-    (print "1")
-    (print auxState)
     (list auxState))))
 
+; (loop for x in '(a b c d e)
 
 
 
@@ -91,9 +97,17 @@
 ;(load(compile-file "G18.lisp"))
 ;(faz-afectacao '((L2 L1 1 25) (L1 L2 34 60) (L5 L1 408 447) (L1 L1 448 551)(L1 L1 474 565)) "profundidade" )
 ;(objective? (makeInitialState '()))
-;(setf t1 '(L1 L2 3 4))
-;(setf t3 '((L2 L1 1 25) (L1 L2 34 60)))
-
+(setf t1 '(L1 L2 3 4))
+(setf t2 '(L3 L4 78 90))
+(setf t3 '((L2 L1 1 25) (L1 L2 34 60)))
+(print "s1")
+(setf s1 (makeShift (list t1)))
+(print s1)
+(print "s3")
+(setf s3 (makeShift t3))
+(print s3)
+(addTask s3 t2)
+(print s3)
 (defun sondagem-iterativa (problema)
   (let* ((*nos-gerados* 0)
 		 (*nos-expandidos* 0)
@@ -152,6 +166,7 @@
 					(return-from ilds (list out-result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))))
 
 (defun 1-samp (problema profundidade-maxima)
+  "Algoritmo de procura em profundidade primeiro."
 
   (let ((estado= (problema-estado= problema))
         (objectivo? (problema-objectivo? problema)))
@@ -205,4 +220,3 @@
         )
     )) counter
 )
-
