@@ -5,7 +5,50 @@
   unusedTasks
   )
 
-(defun addTask (state)
+(defstruct shift
+  tasks
+  duration
+  lastPoint
+  mealBrake
+  )
+
+(defun shiftDuration (shift)
+  (print (shift-tasks shift))
+  (print (nth (- (list-length (shift-tasks shift)) 1) (shift-tasks shift)))
+  (- (nth 3  (last (nth (- (list-length (shift-tasks shift)) 1) (shift-tasks shift)))) (nth 2 (first (shift-tasks shift))))
+  )
+
+(defun makeShift (tasks)
+  (let ((ini (make-shift :tasks '()
+                        :duration 0
+                        :lastPoint "L"
+                        :mealBrake nil)))
+        (setf (shift-tasks ini) (list tasks))
+        (setf (shift-duration ini) (shiftDuration ini))
+        (print 1)
+        (setf (shift-lastPoint ini) (nth 1 (last (shift-tasks ini))))
+        (print 2)
+        ;(setf (shift-mealBrake ini) (hadMealBreak (shift-tasks ini)))
+  ini))
+
+
+(defun makeState (shifts tasks)
+  (let ((ini (make-state :shifts shifts :unusedTasks tasks)))
+  ini))
+
+(defun makeInitialState (tasks)
+  (let ((ini (make-state :shifts (list ()) :unusedTasks tasks)))
+  ini))
+
+
+; (defun hadMealBreak (tasks)
+;   ;for all in tasks
+;   ;   if endingTime - startingTime = 40
+;   ;       true
+;   ;   false
+;   )
+
+(defun operator (state)
   (let ((auxState state))
       (let((auxTask (state-unusedTasks auxState))
       (auxShift  (last (state-shifts auxState))))
@@ -17,42 +60,18 @@
     (print auxState)
     (list auxState))))
 
-; (defun checkTask (state)
-;   (let ((auxState state)
-;         (auxShift (nth nshift state-shifts))
-;         (lastTask (last auxShift))))
-;   if ((first task))
-;   )
-;
-(defun addShift (state)
-  (let ((auxState state))
-  (push () (state-shifts auxState))
-  (print "2")
-  (print auxState)
-  (list auxState)))
 
 
 
-(defun shiftDuration (shift)
-  (- (nth 4 (last shift)) (nth 3 (first shift)))
-  )
 
-(defun makeState (shifts tasks)
-  (let ((ini (make-state :shifts shifts :unusedTasks tasks)))
-  ini))
-
-(defun makeInitialState (tasks)
-  (let ((ini (make-state :shifts (list ()) :unusedTasks tasks)))
-  ini))
-
-(defun objetivo? (state)
-  (null (state-unusedTasks state)))
+(defun objective? (state)
+  (equal '() (state-unusedTasks state)))
 
 
 (defun faz-afectacao (tasks strategy)
 
-
-  (procura (cria-problema (makeInitialState tasks) (list #'addTask #'addShift) :objectivo? #'objetivo?) strategy)
+  (print (objective? (makeInitialState tasks)))
+  (procura (cria-problema (makeInitialState tasks) (list #'operator) :objectivo? #'objective?) strategy)
   ; (procura problema estrategia)
   )
 
@@ -71,8 +90,11 @@
 
 ;(load(compile-file "G18.lisp"))
 ;(faz-afectacao '((L2 L1 1 25) (L1 L2 34 60) (L5 L1 408 447) (L1 L1 448 551)(L1 L1 474 565)) "profundidade" )
+;(objective? (makeInitialState '()))
+;(setf t1 '(L1 L2 3 4))
+;(setf t3 '((L2 L1 1 25) (L1 L2 34 60)))
 
-(defun sondagem-iterativa (problema) 
+(defun sondagem-iterativa (problema)
   (let* ((*nos-gerados* 0)
 		 (*nos-expandidos* 0)
 		 (tempo-inicio (get-internal-run-time))
@@ -83,7 +105,7 @@
     (labels ((lanca-sonda (estado)
               (cond ((funcall objectivo? estado) (list estado))
                     ((null estado) nil)
-                    (t 
+                    (t
                      (let* ((sucessores (problema-gera-sucessores problema estado))
                             (num-elem (length sucessores)))
                        (if(equal num-elem 0)
@@ -94,8 +116,8 @@
 
              (return-from sondagem-iterativa (list result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))
 
-			 
-(defun ilds (problema maxDepth) 
+
+(defun ilds (problema maxDepth)
   (let ((*nos-gerados* 0)
 		(*nos-expandidos* 0)
 		(tempo-inicio (get-internal-run-time))
@@ -104,7 +126,7 @@
         ;(estado= (problema-estado= problema))
         (numMaxDiscrepancia maxDepth)
         (out-result nil))
-    
+
     (labels ((ildsProbe (estado maxDiscrepancia rProfundidade start-time)
                 (let* ((sucessores-nao-ordenados (problema-gera-sucessores problema estado))
 		       		   (sucessores (funcall (ilds-sorter (problema-heuristica problema)) sucessores-nao-ordenados))
@@ -112,7 +134,7 @@
                        (result nil))
                      (cond 	((funcall objectivo? estado) (list estado))
                      		((or (= 0 num-elem) (<= (- max-runtime (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) 2.5)) nil)
-                     		(t 
+                     		(t
                      			(setf result nil)
                      			(if (> rProfundidade maxDiscrepancia)
                      				(setf result (ildsProbe (car sucessores) maxDiscrepancia (- rProfundidade 1) start-time)))
@@ -158,4 +180,4 @@
                                      (when solucao
                                        (cons estado solucao)))))))
 
-            (procura-prof (problema-estado-inicial problema) nil 0))))
+(procura-prof (problema-estado-inicial problema) nil 0))))
