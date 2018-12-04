@@ -108,6 +108,10 @@
 (print s3)
 (addTask s3 t2)
 (print s3)
+
+; ; Algoritmos
+
+; Algoritmo de Sondagem Iterativa
 (defun sondagem-iterativa (problema)
   (let* ((*nos-gerados* 0)
 		 (*nos-expandidos* 0)
@@ -131,6 +135,7 @@
              (return-from sondagem-iterativa (list result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))
 
 
+; Algoritmo de ILDS
 (defun ilds (problema maxDepth)
   (let ((*nos-gerados* 0)
 		(*nos-expandidos* 0)
@@ -165,6 +170,8 @@
 				(when (not (null out-result))
 					(return-from ilds (list out-result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))))
 
+
+; Algoritmo de 1-samp
 (defun 1-samp (problema profundidade-maxima)
   "Algoritmo de procura em profundidade primeiro."
 
@@ -194,7 +201,60 @@
                                      (when solucao
                                        (cons estado solucao)))))))
 
-(procura-prof (problema-estado-inicial problema) nil 0))))
+                        (procura-prof (problema-estado-inicial problema) nil 0))))
+
+; Algoritmo de ILDS melhorada
+(defun ilds-best-solution (problema maxDepth) 
+  (let ((*nos-gerados* 0)
+		(*nos-expandidos* 0)
+		(tempo-inicio (get-internal-run-time))
+		(max-runtime 300)
+		(objectivo? (problema-objectivo? problema))
+        ;(estado= (problema-estado= problema))
+        (numMaxDiscrepancia maxDepth)
+        (current-result nil)
+        (out-result nil))
+    
+    (labels ((ildsProbe (estado maxDiscrepancia rProfundidade start-time)
+                (let* ((sucessores-nao-ordenados (problema-gera-sucessores problema estado))
+		       		   (sucessores (funcall (ilds-sorter (problema-heuristica problema)) sucessores-nao-ordenados))
+                       (num-elem (list-length sucessores))
+                       (result nil)
+                       (result-temp nil))
+                     (cond 	((funcall objectivo? estado) (list estado))
+                     		((or (= 0 num-elem) (<= (- max-runtime (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) 2.5)) nil)
+                     		(t 
+                     			(setf result-temp nil)
+                     			(if (> rProfundidade maxDiscrepancia)
+                     				(setf result-temp (ildsProbe (car sucessores) maxDiscrepancia (- rProfundidade 1) start-time)))
+                     			(if (and (> maxDiscrepancia 0) (null result))
+                     				(progn
+	                     				(dolist (suc (cdr sucessores))
+	                     					(if (> (- max-runtime (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) 2.5)
+	                     						(progn
+			                     					(setf result-temp (ildsProbe suc (- maxDiscrepancia 1 ) (- rProfundidade 1) start-time))
+			                     					(when (not (null result-temp))
+			                     						(if (null result)
+			                     							(setf result result-temp)
+			                     							(if (is-better-solution-job-shop result result-temp)
+			                     								(setf result result-temp)))))
+	             					 		(return-from ildsProbe result)))))
+                     			(setf result result-temp)
+                 				(return-from ildsProbe result))))))
+
+			(loop for maxDiscrepancia from 0 to numMaxDiscrepancia do
+				(if (> (- max-runtime (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) 5)
+					(progn
+						(setf current-result (ildsProbe (problema-estado-inicial problema) maxDiscrepancia maxDepth tempo-inicio))
+						(when (not (null current-result))
+							(if (null out-result)
+								(setf out-result current-result)
+								(if (is-better-solution-job-shop out-result current-result)
+									(setf out-result current-result)))))
+					(return-from ilds-best-solution (list out-result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*))))
+
+			(return-from ilds-best-solution (list out-result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))
+
 
 ; ; Heurísticas
 
