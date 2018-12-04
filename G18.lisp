@@ -196,7 +196,7 @@
 
 (procura-prof (problema-estado-inicial problema) nil 0))))
 
-; ; heuristicas
+; ; Heurísticas
 
 ; Heurística que retorna a quantidade de turnos que contém o estado
 (defun heuristic-shifts-quantity (state)
@@ -217,6 +217,30 @@
                     (setq counter (+ counter 1))
                 )
             )
+        )
+    )) counter
+)
+
+; Heurística que retorna o tempo que sobrou do turno (em minutos)
+(defun heuristic-remaining-shifts-time (state)
+    (setq total 0)
+    (let ((auxState state))
+      (let((auxShifts (state-shifts auxState)))
+        (loop for shift in auxShifts do
+            (setq total (+ total (- 480 (shiftDuration(shift)))))
+        )
+    )) total
+)
+
+; Heurística que retorna o número de serviços inferior a 6h
+(defun heuristic-shifts-less-than-6h (state)
+    (setq counter 0)
+    (let ((auxState state))
+      (let((auxShifts (state-shifts auxState)))
+        (loop for shift in auxShifts do
+            (if (< 360 (shiftDuration(shift)))
+                (setq counter (+ counter 1))
+             )
         )
     )) counter
 )
