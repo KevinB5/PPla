@@ -9,7 +9,7 @@
   tasks
   duration
   lastPoint
-  mealBrake
+  mealBreak
   )
 
 (defun shiftDuration (shift)
@@ -152,7 +152,6 @@
 					(return-from ilds (list out-result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))))
 
 (defun 1-samp (problema profundidade-maxima)
-  "Algoritmo de procura em profundidade primeiro."
 
   (let ((estado= (problema-estado= problema))
         (objectivo? (problema-objectivo? problema)))
@@ -181,3 +180,29 @@
                                        (cons estado solucao)))))))
 
 (procura-prof (problema-estado-inicial problema) nil 0))))
+
+; ; heuristicas
+
+; Heurística que retorna a quantidade de turnos que contém o estado
+(defun heuristic-shifts-quantity (state)
+    (let ((auxState state))
+      (let((auxShifts (state-shifts auxState)))
+        (return (list-length auxShifts))
+    ))
+)
+
+; Heurística que retorna a quantidade turnos que não iniciam na localização "L1"
+(defun heuristic-shifts-notL1 (state)
+    (setq counter 0)
+    (let ((auxState state))
+      (let((auxShifts (state-shifts auxState)))
+        (loop for shift in auxShifts do
+            (let (start-location (nth 0 (nth 0 shift)))
+                (if (not (eql start-location "L1"))
+                    (setq counter (+ counter 1))
+                )
+            )
+        )
+    )) counter
+)
+
