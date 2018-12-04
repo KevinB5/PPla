@@ -128,3 +128,34 @@
 				(setf out-result (ildsProbe (problema-estado-inicial problema) maxDiscrepancia maxDepth tempo-inicio))
 				(when (not (null out-result))
 					(return-from ilds (list out-result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))))
+
+(defun 1-samp (problema profundidade-maxima)
+  "Algoritmo de procura em profundidade primeiro."
+
+  (let ((estado= (problema-estado= problema))
+        (objectivo? (problema-objectivo? problema)))
+
+    (labels ((esta-no-caminho? (estado caminho)
+                               (member estado caminho :test estado=))
+
+             (procura-prof (estado caminho prof-actual)
+                           (cond ((funcall objectivo? estado) (list estado))
+                                 ((= prof-actual profundidade-maxima) nil)
+                                 ((esta-no-caminho? estado caminho) nil)
+                                 (t
+                                   ;; avancamos recursivamente, em profundidade,
+                                   ;; para cada sucessor
+                                   (let* ((sucs (problema-gera-sucessores problema estado))
+                                          (sucs-number (list-length sucs))
+                                          (suc nil)
+                                          (solucao nil))
+                                     (when (eql sucs-number 0)
+                                       (return-from procura-prof nil))
+                                     (setf suc (nth (random sucs-number) sucs))
+                                     (setf solucao (procura-prof suc
+                                                                 (cons estado caminho)
+                                                                 (1+ prof-actual)))
+                                     (when solucao
+                                       (cons estado solucao)))))))
+
+            (procura-prof (problema-estado-inicial problema) nil 0))))
