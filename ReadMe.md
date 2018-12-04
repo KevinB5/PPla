@@ -25,6 +25,10 @@ Código (O que tem X significa que já foi adicionado):
 "ILDS"
 "abordagem.alternativa"
 
+#Dúvidas
+
+Tempo de deslocação para L1?
+
 Código encontrado:
 https://github.com/nunofmaia/sokoban/blob/master/procuras.lisp
 https://github.com/antoniovilarinholopes/Lisp-Searches
