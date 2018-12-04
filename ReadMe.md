@@ -24,3 +24,5 @@ Tempo de deslocação para L1?
 Código encontrado:
 https://github.com/nunofmaia/sokoban/blob/master/procuras.lisp
 https://github.com/antoniovilarinholopes/Lisp-Searches
+
+ILDS : https://www.aaai.org/Papers/AAAI/1996/AAAI96-043.pdf
