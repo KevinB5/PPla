@@ -32,5 +32,6 @@ https://github.com/nunofmaia/sokoban/blob/master/procuras.lisp
 https://github.com/antoniovilarinholopes/Lisp-Searches
 
 ILDS : https://www.aaai.org/Papers/AAAI/1996/AAAI96-043.pdf
+IDA : https://github.com/aimacode/aima-lisp/blob/master/search/algorithms/ida.lisp
 
 Estratégia de poda: http://www.barbon.com.br/wp-content/uploads/2013/08/Aula3_IC.pdf
