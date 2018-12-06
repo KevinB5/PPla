@@ -14,6 +14,18 @@
   mealBrake
   )
 
+; Updates the duration of the shift to 6h if it is less than 6h
+(defun less-than-6h (shift)
+    (let ((aux shift))
+        (setf duration(shiftDuration aux))
+            (if (< duration 360)
+                (setf (shift-duration aux) 360)
+            )
+    aux) 
+)
+
+
+
 ; Função de que retorna a duração total do turno em inserido como argumento
 (defun shiftDuration (shift)
   (let ((duration 0))
@@ -21,7 +33,16 @@
     (setf duration (- (nth 3 (first (shift-tasks shift))) (nth 2 (first (shift-tasks shift)))))
     (setf duration (- (nth 3 (nth (- (list-length (shift-tasks shift)) 1) (shift-tasks shift))) (nth 2 (first (shift-tasks shift)))))
     )
-    duration))
+))
+
+; Função que adiciona 40 minutos ao turno se não iniciou na primeira posição
+(defun check-start-location-not-L1 (shift)
+    (let ((start-location (nth 0(nth 0 (shift-tasks shift)))))
+                (if (not (eql start-location (car '(L1))))
+                       (setf shift-duration (+ shift-duration 40))           
+                )
+    )shift
+)
 
 ; Cria um turno
 (defun makeShift (tasks)
@@ -98,9 +119,12 @@
 
 ; Função que executa a solução do problema
 (defun faz-afectacao (tasks strategy)
-
+    (setq tempo-inicio (get-internal-run-time))
   (procura (cria-problema (makeInitialState tasks) (list #'operator) :objectivo? #'objective?) strategy)
   ; (procura problema estrategia)
+  
+  (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second))
+
   )
 
 ; (cria-problema <initial state>
@@ -173,7 +197,6 @@
 (defun sondagem-iterativa (problema)
   (let* ((*nos-gerados* 0)
 		 (*nos-expandidos* 0)
-		 (tempo-inicio (get-internal-run-time))
 		 (objectivo? (problema-objectivo? problema))
 		 ;(estado= (problema-estado= problema))
 		 (result nil))
@@ -190,14 +213,13 @@
              (loop while (null result) do
                (setf result (lanca-sonda (problema-estado-inicial problema))))
 
-             (return-from sondagem-iterativa (list result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))
+             (return-from sondagem-iterativa (list result *nos-expandidos* *nos-gerados*)))))
 
 
 ; Algoritmo de ILDS
 (defun ilds (problema maxDepth)
   (let ((*nos-gerados* 0)
 		(*nos-expandidos* 0)
-		(tempo-inicio (get-internal-run-time))
 		(max-runtime 300)
 		(objectivo? (problema-objectivo? problema))
         ;(estado= (problema-estado= problema))
@@ -226,7 +248,7 @@
 			(loop for maxDiscrepancia from 0 to numMaxDiscrepancia do
 				(setf out-result (ildsProbe (problema-estado-inicial problema) maxDiscrepancia maxDepth tempo-inicio))
 				(when (not (null out-result))
-					(return-from ilds (list out-result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))))
+					(return-from ilds (list out-result *nos-expandidos* *nos-gerados*)))))))
 
 
 ; Algoritmo de 1-samp
@@ -265,7 +287,6 @@
 (defun ilds-best-solution (problema maxDepth) 
   (let ((*nos-gerados* 0)
 		(*nos-expandidos* 0)
-		(tempo-inicio (get-internal-run-time))
 		(max-runtime 300)
 		(objectivo? (problema-objectivo? problema))
         ;(estado= (problema-estado= problema))
@@ -309,9 +330,9 @@
 								(setf out-result current-result)
 								(if (is-better-solution-job-shop out-result current-result)
 									(setf out-result current-result)))))
-					(return-from ilds-best-solution (list out-result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*))))
+					(return-from ilds-best-solution (list out-result *nos-expandidos* *nos-gerados*))))
 
-			(return-from ilds-best-solution (list out-result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))
+			(return-from ilds-best-solution (list out-result *nos-expandidos* *nos-gerados*)))))
 
 
 ; ; Heurísticas
