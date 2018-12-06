@@ -1,18 +1,15 @@
 #Falta
 
 Documento:
-- Estratégias de Corte
-- Gráficos???? Enunciado pede
 - Avaliação
 A avaliação deve ser baseada em resultados quantitativos nomeadamente: custo das
 soluções, tempo da procura, nós gerados, nós expandidos, factor médio de ramificação,
 profundidade atingida, etc.
 
 Implementação
-- Estratégias de Corte
 - Operador 
 - Verificar restriçoes 
-- Testar algoritmos e heuristicas e escolher melhor abordagem e heuristica
+- Testar algoritmos e escolher melhor abordagem e heuristica
 - Tempo e espaço
 - Custo (duraçao turno)
 
