@@ -111,6 +111,34 @@
 
 ; ; Algoritmos
 
+; Algoritmo IDA*
+(defun ida* (problem)
+  (setf (problem-iterative? problem) t)
+  (let* ((root (create-start-node problem))
+	 (f-limit (node-f-cost root))
+	 (solution nil))
+    (loop (multiple-value-setq (solution f-limit)
+	    (DFS-contour root problem f-limit))
+        (dprint "DFS-contour returned" solution "at" f-limit)
+	(if (not (null solution)) (RETURN solution))
+	(if (= f-limit infinity) (RETURN nil)))))
+    
+; DFS-contour para IDA*
+(defun DFS-contour (node problem f-limit)
+  "Return a solution and a new f-cost limit."
+  (let ((next-f infinity))
+    (cond ((> (node-f-cost node) f-limit)
+	   (values nil (node-f-cost node)))
+	  ((goal-test problem (node-state node))
+	   (values node f-limit))
+	  (t (for each s in (expand node problem) do
+		  (multiple-value-bind (solution new-f)
+		      (DFS-contour s problem f-limit)
+		    (if (not (null solution))
+			(RETURN-FROM DFS-contour (values solution f-limit)))
+		    (setq next-f (min next-f new-f))))
+	     (values nil next-f)))))
+
 ; Algoritmo de Sondagem Iterativa
 (defun sondagem-iterativa (problema)
   (let* ((*nos-gerados* 0)
@@ -304,3 +332,5 @@
         )
     )) counter
 )
+
+
