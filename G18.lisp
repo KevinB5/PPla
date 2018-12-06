@@ -111,7 +111,18 @@
    (values states))
 )
 
-
+; Função custo
+(defun custo (state)
+    (setq custoTotal 0)
+    (let ((auxState state)
+        states)
+    (let ((auxShifts (state-shifts state)))
+          (loop for shift in auxShifts do
+            (setq custoTotal (+ custoTotal shift-duration))
+          )
+    )
+    )
+)
 
 ; Função que verifica se o estado atingiu o objetivo
 (defun objective? (state)
