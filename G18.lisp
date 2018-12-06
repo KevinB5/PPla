@@ -318,10 +318,12 @@
 
 ; Heurística que retorna a quantidade de turnos que contém o estado
 (defun heuristic-shifts-quantity (state)
-    (let ((auxState state))
+    (let ((auxState state)
+    quantity)
       (let((auxShifts (state-shifts auxState)))
-        (return (list-length auxShifts))
+        (setf quantity (list-length auxShifts))
     ))
+    quantity
 )
 
 ; Heurística que retorna a quantidade turnos que não iniciam na localização "L1"
@@ -330,7 +332,7 @@
     (let ((auxState state))
       (let((auxShifts (state-shifts auxState)))
         (loop for shift in auxShifts do
-            (let (start-location (nth 0 (nth 0 shift)))
+            (let ((start-location (nth 0 (nth 0 shift))))
                 (if (not (eql start-location "L1"))
                     (setq counter (+ counter 1))
                 )
