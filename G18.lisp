@@ -1,10 +1,12 @@
 ;(in-package :user)
 
+; Estrutura de dados do estado
 (defstruct state
   shifts
   unusedTasks
   )
 
+; Estrutura de dados do turno
 (defstruct shift
   tasks
   duration
@@ -12,6 +14,7 @@
   mealBrake
   )
 
+; Função de que retorna a duração total do turno em inserido como argumento
 (defun shiftDuration (shift)
   (let ((duration 0))
   (if (equal (list-length (shift-tasks shift)) 1)
@@ -20,6 +23,7 @@
     )
     duration))
 
+; Cria um turno
 (defun makeShift (tasks)
   (let ((ini (make-shift :tasks '()
                         :duration 0
@@ -31,6 +35,7 @@
         ;(setf (shift-mealBrake ini) (hadMealBreak (shift-tasks ini)))
   ini))
 
+; Adiciona uma tarefa ao turno
 (defun addTask (shift task)
   (let ((aux shift))
         (cons (shift-tasks aux) (list task))
@@ -38,16 +43,19 @@
     aux)
   )
 
+; Adiciona uma tarefa ao estado
 (defun addShift (state task)
   (let ((aux state))
         (append (state-shifts aux) (makeShift (list task)))
   aux)
   )
+  
+; Cria o estado inicial
 (defun makeInitialState (tasks)
   (let ((ini (make-state :shifts (list ()) :unusedTasks tasks)))
   ini))
 
-
+; Função que verifica se foi realizado a pausa para o almoço
 ; (defun hadMealBreak (tasks)
 ;   ;for all in tasks
 ;   ;   if endingTime - startingTime = 40 && startingPoint == endingPoint
@@ -55,6 +63,7 @@
 ;   ;   false
 ;   )
 
+; Função operadores
 (defun operator (state)
   (let ((auxState state))
       (let((auxTasks (state-unusedTasks auxState))
@@ -69,11 +78,11 @@
 
 
 
-
+; Função que verifica se o estado atingiu o objetivo
 (defun objective? (state)
   (equal '() (state-unusedTasks state)))
 
-
+; Função que executa a solução do problema
 (defun faz-afectacao (tasks strategy)
 
   (print (objective? (makeInitialState tasks)))
