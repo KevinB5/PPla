@@ -135,14 +135,15 @@
   )
 
   ; Updates the duration of the shift to 6h if it is less than 6h
-  (defun less-than-6h (shift)
-      (let ((aux shift)
-            (duration (shiftDuration shift)))
-              (if (< duration 360)
-                  (setf (shift-duration aux) 360)
-              )
-      aux)
-  )
+(defun less-than-6h (shift)
+    (setq duration 0)
+    (let ((aux shift)
+          (duration (shiftDuration shift)))
+            (if (< duration 360)
+                (setq duration 360)
+            )
+    duration)
+)
 
   ; ; Heurísticas
 
