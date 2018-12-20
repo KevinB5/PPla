@@ -28,16 +28,16 @@
 ; Função de que retorna a duração total do turno em inserido como argumento
 (defun shiftDuration (shift)
   (let ((duration 0))
-  (if (equal (list-length shift) 1)
-    (setf duration (- (nth 3 (first shift)) (nth 2 (first shift))))
-    (setf duration (- (nth 3 (nth (- (list-length shift) 1) shift)) (nth 2 (first shift))))
+  (if (equal (list-length (shift-tasks shift)) 1)
+    (setf duration (- (nth 3 (first (shift-tasks shift))) (nth 2 (first (shift-tasks shift)))))
+    (setf duration (- (nth 3 (nth (- (list-length (shift-tasks shift)) 1) (shift-tasks shift))) (nth 2 (first (shift-tasks shift)))))
     )
     duration))
 
 ; Função que adiciona 40 minutos ao turno se não iniciou na primeira posição
-(defun shiftTotal (shift)
+(defun check-start-location-not-L1 (shift)
     (let ((aux shift)
-          (start-location (nth 0(nth 0 shift))))
+          (start-location (nth 0(nth 0 (shift-tasks shift)))))
                 (if (not (eql start-location (car '(L1))))
                        (setf (shift-duration aux) (+ (shift-duration aux) 40))
                 )
