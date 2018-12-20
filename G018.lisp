@@ -136,13 +136,13 @@
 
   ; Updates the duration of the shift to 6h if it is less than 6h
 (defun less-than-6h (shift)
-    (setq duration 0)
-    (let ((aux shift)
-          (duration (shiftDuration shift)))
+    (setq duration (shiftDuration shift))
+    (let ((aux shift))
             (if (< duration 360)
                 (setq duration 360)
             )
-    duration)
+    )
+    duration
 )
 
   ; ; Heurísticas
@@ -163,7 +163,7 @@
             (counter 0))
         (let((auxShifts (state-shifts auxState)))
           (loop for shift in auxShifts do
-              (let ((start-location (nth 0(nth 0 (shift-tasks shift)))))
+              (let ((start-location (nth 0(nth 0 shift))))
                   (if (not (eql start-location (car '(L1))))
                       (setq counter (+ counter 1))
 
