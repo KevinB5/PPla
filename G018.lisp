@@ -105,8 +105,8 @@
  )
 
 ; Função que verifica se uma tarefa com localidade não contínua é possível ser adicionada a um turno
-(defun check-time-continuity (shift task)
-    (if (listp (nth 1 shift))
+(defun check-time-continuity-different (shift task)
+    (if (listp (nth 0 shift))
       (let* ((waiting-time (- (nth 2 task) (nth 3 (nth (- (list-length shift) 1) shift))))
               (actual-shift-time (shiftDuration shift))
               (task-time (- (nth 3 task) (nth 2 task))))
@@ -128,11 +128,34 @@
                )
             )
       )
+)
 
+; Função que verifica se uma tarefa com localidade contínua é possível ser adicionada a um turno
+(defun check-time-continuity-equal (shift task)
+    (if (listp (nth 0 shift))
+      (let* ((waiting-time (- (nth 2 task) (nth 3 (nth (- (list-length shift) 1) shift))))
+              (actual-shift-time (shiftDuration shift))
+              (task-time (- (nth 3 task) (nth 2 task))))
+              (and (> waiting-time 40)
+                (or (> (+ actual-shift-time waiting-time) 240)
+                       (< (- actual-shift-time (+ waiting-time task-time)) 240)
+                       (> actual-shift-time 280))
+              )
+           )
+       (let* ((waiting-time (- (nth 2 task) (nth 3 shift)))
+               (actual-shift-time (shiftDuration (list shift)))
+               (task-time (- (nth 3 task) (nth 2 task))))
+               (and (> waiting-time 40)
+                    (or (> (+ actual-shift-time waiting-time) 240)
+                        (< (- actual-shift-time (+ waiting-time task-time)) 240)
+                        (> actual-shift-time 280))
+               )
+            )
+      )
 )
 
 ; Função operadores
-(defun operator (state)
+(defun operator-old (state)
   (let ((match 0)
         auxState
         states)
@@ -162,6 +185,41 @@
     (values states))
 )
 
+(defun operator (state)
+	(let ((match 0) auxState states)
+		(cond 
+			((equal nil (state-shifts state)) 
+				(setq auxState (addShift state)
+				states (cons auxState states)))
+			
+			((not (equal nil (state-shifts state)))
+			(loop for shift in (state-shifts state)
+				do   
+					(if (and (> (nth 2 (first (state-unusedTasks state))) (lastTime shift))
+						(< (- (nth 3 (first (state-unusedTasks state))) (nth 2 (first shift))) 480))
+							(if (and (equal (first (first (state-unusedTasks state))) (lastPlace shift))
+								(check-time-continuity-equal shift (first (state-unusedTasks state))))
+									(setq auxState (addTask state (position shift (state-shifts state) :test #'equal))
+										states (cons auxState states)
+										match (+ match 1))
+									(if (check-time-continuity-different shift (first (state-unusedtasks state)))
+										(setq auxstate (addtask state (position shift (state-shifts state) :test #'equal))
+											states (cons auxstate states)
+											match (+ match 1))
+									)
+							)
+					)
+				
+			))
+		)
+	(if (equal match 0) 
+		(setq auxState (addShift state)
+            states (cons auxState states))
+	)
+    (values states)
+	)
+)
+
 (defun cost (state)
   (let ((custoTotal 0))
     (loop for shift in (state-shifts state) do
@@ -178,7 +236,7 @@
 ; Função que executa a solução do problema
 (defun faz-afectacao (tasks strategy)
 
-  (sort tasks 'compare-3rd)
+  ;(sort tasks 'compare-3rd)
 
   ; (print (sondagem-iterativa (cria-problema (makeInitialState tasks)
   ;                                   (list #'operator)
@@ -349,4 +407,4 @@
 
 ; (load(compile-file "G018.lisp"))
 (load(compile-file "problems.lisp"))
-(faz-afectacao problem5 "largura")
+(faz-afectacao problem2 "largura")
