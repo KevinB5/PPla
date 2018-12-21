@@ -3,6 +3,8 @@
 ; Kevin Batista Corrales, ist194131
 ;(in-package :user)
 
+(load (compile-file "procura.lisp"))
+(load (compile-file "problems.lisp"))
 
 ; Estrutura de dados do estado
 (defstruct state
@@ -87,17 +89,29 @@
 
 ; Função operadores
 (defun operator (state)
-  (let ((auxState state)
+  (let ((match nil)
+        auxState
         states)
     (cond
-      ((equal nil (state-shifts state)) (setf auxState (addShift state)))
+      ((equal nil (state-shifts state)) (setq auxState (addShift state)
+                                              states (cons auxState states)))
 
-      ((not (equal nil (state-shifts state))) (setf auxState (add? auxState)))
-
+      ((not (equal nil (state-shifts state)))
+      (loop for shift in (state-shifts state)
+        do(
+          if (and (equal (first (first (state-unusedTasks state))) (lastPlace shift))
+                  (> (nth 2 (first (state-unusedTasks state))) (lastTime shift))
+                  (< (- (nth 3 (first (state-unusedTasks state))) (nth 2 (first shift))) 480))
+              (setq auxState (addTask state (position shift (state-shifts state) :test #'equal))
+                    states (cons auxState states)
+                    match T)
+           )
+        )
       )
 
-    (push auxState states)
-
+      )
+    (if (equal match nil) (setq auxState (addShift state)
+                              states (cons auxState states)))
     (values states))
 )
 
@@ -114,23 +128,25 @@
 ; Função que executa a solução do problema
 (defun faz-afectacao (tasks strategy)
 
-  (setf res (procura (cria-problema (makeInitialState tasks)
-                                    (list #'operator)
-                                    :objectivo? #'objective?
-                                    :heuristica #'heuristic-shifts-notL1
-                                    :custo #'cost
-                                    ) strategy))
-  (print res)
-  ; (setf s1 (makeInitialState tasks))
-  ; (setf s2 (addShift s1))
-  ; (print "s2")
-  ; (print s2)
-  ; (setf s3 (add? s2))
-  ; (print "s3")
-  ; (print s3)
-  ; (setf s4 (add? s3))
-  ; (print "s4")
-  ; (print s4)
+  ; (procura (cria-problema (makeInitialState tasks)
+  ;                                   (list #'operator)
+  ;                                   :objectivo? #'objective?
+  ;                                   :heuristica #'heuristic-shifts-quantity
+  ;                                   :custo #'cost)
+  ;                    strategy)
+  ; (print res)
+
+
+  (setf s1 (makeInitialState tasks))
+  (setf s2 (addShift s1))
+  (print "s2")
+  (print s2)
+  (setf s3 (addShift s2))
+  (print "s3")
+  (print s3)
+  (setf s4 (operator s3))
+  (print "operator")
+  (print s4)
   ; (setf s5 (add? s4))
   ; (print "s5")
   ; (print s5)
@@ -147,53 +163,54 @@
   ;   do(print (shiftDuration shift))
   ; )
   ; (print (heuristic-remaining-shifts-time s8))
+  ; (print "operator")
+  ; (print (operator s8))
 )
 
-  ; Updates the duration of the shift to 6h if it is less than 6h
-  (defun less-than-6h (shift)
-      (let ((aux shift)
-            (duration (shiftDuration shift)))
-              (if (< duration 360)
-                  360
-              )
-      )
-  )
-
-  ; ; Heurísticas
-
-  ; Heurística que retorna a quantidade de turnos que contém o estado
-  (defun heuristic-shifts-quantity (state)
-      (state-nShifts state)
-  )
-
-  ; Heurística que retorna a quantidade turnos que não iniciam na localização "L1"
-  (defun heuristic-shifts-notL1 (state)
-      (let ((counter 0))
-        (loop for shift in (state-shifts state) do
-            (if (listp (nth 1 shift))
-              (if (not (eql (first (first shift)) (car '(L1))))
-                (setq counter (+ counter 1))
-               )
-              (if (not (eql (first shift) (car '(L1))))
-                (setq counter (+ counter 1))
-              ))
+; Updates the duration of the shift to 6h if it is less than 6h
+(defun less-than-6h (shift)
+    (let ((duration (shiftDuration shift)))
+            (if (< duration 360)
+                360
             )
-      counter)
-  )
+    )
+)
 
-  ; Heurística que retorna o tempo que sobrou do turno (em minutos)
-  (defun heuristic-remaining-shifts-time (state)
-      (let ((auxState state)
-            (total 0))
-        (let((auxShifts (state-shifts auxState)))
-          (loop for shift in auxShifts do
-              (setq total (+ total (- 480 (shiftDuration shift))))
+;;;;;;;;;;; Heurísticas ;;;;;;;;;;;;;;;;;;;;;
+
+; Heurística que retorna a quantidade de turnos que contém o estado
+(defun heuristic-shifts-quantity (state)
+    (state-nShifts state)
+)
+
+; Heurística que retorna a quantidade turnos que não iniciam na localização "L1"
+(defun heuristic-shifts-notL1 (state)
+    (let ((counter 0))
+      (loop for shift in (state-shifts state) do
+          (if (listp (nth 1 shift))
+            (if (not (eql (first (first shift)) (car '(L1))))
+              (setq counter (+ counter 1))
+             )
+            (if (not (eql (first shift) (car '(L1))))
+              (setq counter (+ counter 1))
+            ))
           )
+    counter)
+)
 
-      )total)
-  )
+; Heurística que retorna o tempo que sobrou do turno (em minutos)
+(defun heuristic-remaining-shifts-time (state)
+    (let ((auxState state)
+          (total 0))
+      (let((auxShifts (state-shifts auxState)))
+        (loop for shift in auxShifts do
+            (setq total (+ total (- 480 (shiftDuration shift))))
+        )
 
-  ; Heurística que retorna o número de serviços inferior a 6h
+    )total)
+)
+
+; Heurística que retorna o número de serviços inferior a 6h
 (defun heuristic-shifts-less-than-6h (state)
    (let ((counter 0))
      (loop for shift in (state-shifts state) do
@@ -273,113 +290,6 @@
 
 ; SMA*
 
-(defun tree-sma (problem &optional (memory-size 20)
-			 &aux n
-			      (start (create-start-node problem))
-			      (q (make-search-tree start (node-f-cost start)))
-			      (memory-used 1))
-
-  (loop 
-   (when (empty-tree q) (return nil))
-   (setq n (deepest-least-leaf q))
-   (when (goal-test problem n)
-     (return n))
-   (when (= (node-f-cost n) infinity) (return nil))
-   (let ((s (tree-get-next-successor n q memory-size problem)))
-     (when s
-       (unless (node-unexpanded n)  ;;; n exhausted, drop from queue
-	 (delete-element n q (node-f-cost n)))
-       (incf memory-used)
-       (insert-element s q (node-f-cost s))
-       (when (> memory-used memory-size)
-	 (tree-prune-open q)
-	 (decf memory-used)))))
-  )
-
-
-;;; tree-get-next-successor returns the next successor of n, if any (else nil)
-(defun tree-get-next-successor (n q memory-size problem &aux (next nil))
-  (unless (node-expanded? n) 
-    (setf (node-unexpanded n)
-	  (if  (= (1+ (node-depth n)) memory-size)
-	      (list 'done)
-	    (nconc (expand n problem) (list 'done))))
-    (setf (node-expanded? n) t))
-  (unless (eq (car (node-unexpanded n)) 'done)
-    (setq next (pop (node-unexpanded n)))
-    (push next (node-successors n)))
-  (unless (node-completed? n)
-    (when (eq (car (node-unexpanded n)) 'done)  ;;; all successors examined 
-      (pop (node-unexpanded n))
-      (setf (node-completed? n) t)
-      (tree-backup-f-cost n q t)))
-  next)
-
-;;; tree-backup-f-cost updates the f-cost for a node's ancestors as needed
-(defun tree-backup-f-cost (node q &optional (was-open? nil) 
-                                  &aux (current (node-f-cost node))
-				       (least infinity)) 
-  (when (node-completed? node)
-    (dolist (s (node-successors node))
-      (let ((v (node-f-cost s)))
-        (when (< v least) (setq least v))))
-    (dolist (s (node-unexpanded node))
-      (let ((v (node-f-cost s)))
-        (when (< v least) (setq least v))))
-    (when (> least current)
-      (when (or was-open? (openp node))  ;;; changing f value - re-order
-        (delete-element node q current)
-        (insert-element node q least))
-      (setf (node-f-cost node) least)
-      (let ((parent (node-parent node)))
-        (when parent (tree-backup-f-cost parent q))))))
-
-
-(defun tree-prune-open (q &aux (worstnode (shallowest-largest-leaf q))
-                               (parent (node-parent worstnode)))
-  (delete-element worstnode q (node-f-cost worstnode))
-  (setf (node-successors worstnode) nil) ;;;actually free up memory
-  (setf (node-expanded? worstnode) nil)
-
-  (unless (node-unexpanded parent)   ;;;parent was closed - need to re-open
-    (insert-element parent q (node-f-cost parent)))
-  (tree-unexpand-successor worstnode parent))
-
-(defun tree-unexpand-successor (successor parent)  
-  (setf (node-unexpanded parent) 
-	(nconc (node-unexpanded parent) (list successor)))
-  (setf (node-successors parent)
-	(delete successor (node-successors parent) :test #'eq)) 
-  (when (node-completed? parent)
-    (unless (node-successors parent)
-      (setf (node-unexpanded parent) nil) ;;; reclaim space
-      (setf (node-expanded? parent) nil)
-      (setf (node-completed? parent) nil))))
-
-
-
-
-(defun deepest-least-leaf (q)
-  (the-biggest #'(lambda (n) (node-depth n)) (search-tree-node-value
-					       (leftmost q)))) 
-
-(defun shallowest-largest-leaf (q)
-  (the-smallest-that 
-    #'(lambda (n) (node-depth n))
-    #'leafp
-    (search-tree-node-value (rightmost q))))
-
-
-(defun find-leaf (node &aux (s (node-successors node)))
-  (if s (find-leaf (car s))
-      node))
-
-(defun leafp (n)
-  (null (node-successors n)))
-
-(defun openp (n)
-  (or (not (node-expanded? n))
-      (node-unexpanded n))
 
 
 ; (load(compile-file "G018.lisp"))
