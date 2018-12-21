@@ -142,22 +142,20 @@
 
       ((not (equal nil (state-shifts state)))
       (loop for shift in (state-shifts state)
-        do(
-          cond ((and (equal (first (first (state-unusedTasks state))) (lastPlace shift))
+        do( if (and (equal (first (first (state-unusedTasks state))) (lastPlace shift))
                   (> (nth 2 (first (state-unusedTasks state))) (lastTime shift))
                   (< (- (nth 3 (first (state-unusedTasks state))) (nth 2 (first shift))) 480))
                 (setq auxState (addTask state (position shift (state-shifts state) :test #'equal))
                       states (cons auxState states)
-                      match (+ match 1)))
+                      match (+ match 1))
 
-                ((check-time-continuity shift (first (state-unusedTasks state)))
-                (setq auxState (addTask state (position shift (state-shifts state) :test #'equal))
-                      states (cons auxState states)
-                      match (+ match 1)))
+                ; (if (check-time-continuity shift (first (state-unusedTasks state)))
+                ;       (setq auxState (addTask state (position shift (state-shifts state) :test #'equal))
+                ;             states (cons auxState states)
+                ;             match (+ match 1)))
           )
         )
       )
-
       )
     (if (equal match 0) (setq auxState (addShift state)
                               states (cons auxState states)))
@@ -182,11 +180,17 @@
 
   (sort tasks 'compare-3rd)
 
-  (print (sondagem-iterativa (cria-problema (makeInitialState tasks)
+  ; (print (sondagem-iterativa (cria-problema (makeInitialState tasks)
+  ;                                   (list #'operator)
+  ;                                   :objectivo? #'objective?
+  ;                                   :custo #'cost)
+  ;                  ))
+  (print (procura (cria-problema (makeInitialState tasks)
                                     (list #'operator)
                                     :objectivo? #'objective?
-                                    :custo #'cost)
-                   ))
+                                    :heuristica #'heuristic-shifts-quantity
+                                    :custo #'cost
+                                    ) strategy))
   ; (setf s1 (makeInitialState tasks))
   ; (setf s2 (addShift s1))
   ; (print "s2")
@@ -345,4 +349,4 @@
 
 ; (load(compile-file "G018.lisp"))
 (load(compile-file "problems.lisp"))
-(faz-afectacao problem5 "profundidade")
+(faz-afectacao problem5 "largura")
