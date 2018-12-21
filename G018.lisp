@@ -288,8 +288,16 @@
 				(when (not (null out-result))
 					(return-from ilds (list out-result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))))
 
-; SMA*
 
+; ; extra
+
+; Função que verifica se uma tarefa com localidade não contínua é possível ser adicionada a um turno
+(defun check-time-continuity (shift task)
+    (let* ((lastTask (nth (- (list-length shift) 1) shift))
+            (duration (- (nth 2 task) (nth 3 lastTask))))
+         (> duration 40)      
+         )   
+)
 
 
 ; (load(compile-file "G018.lisp"))
