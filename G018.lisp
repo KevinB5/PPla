@@ -196,6 +196,7 @@
 			
 			((not (equal nil (state-shifts state)))
 			(loop for shift in (state-shifts state)
+					when (< match 1)
 				do   
 					(if (and (> (nth 2 (first (state-unusedTasks state))) (lastTime shift))
 						(< (- (nth 3 (first (state-unusedTasks state))) (nth 2 (first shift))) 480))
@@ -216,7 +217,7 @@
 		)
 	(if (equal match 0) 
 		(setq auxState (addShift state)
-            states (cons auxState states))
+           states (cons auxState states))
 	)
     (values states)
 	)
