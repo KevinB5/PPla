@@ -218,7 +218,6 @@
 		(setq auxState (addShift state)
             states (cons auxState states))
 	)
-	(print auxState)
     (values states)
 	)
 )
@@ -299,7 +298,7 @@
 
 ; Heurística que retorna a quantidade de turnos que contém o estado
 (defun heuristic-shifts-quantity (state)
-  (state-nShifts state))
+  (values (state-nShifts state)))
 
 
 ; Heurística que retorna a quantidade turnos que não iniciam na localização "L1"
@@ -314,7 +313,7 @@
               (setq counter (+ counter 1))
             ))
           )
-    counter)
+    (values counter))
 )
 
 ; Heurística que retorna o tempo que sobrou do turno (em minutos)
@@ -325,7 +324,7 @@
         (loop for shift in auxShifts do
             (setq total (+ total (- 480 (shiftDuration shift))))
         )
-    )total)
+    )(values total))
 )
 
 ; Heurística que retorna o número de serviços inferior a 6h
@@ -340,7 +339,7 @@
           (setq counter (+ counter 1))
          ))
        )
-   counter))
+   (values counter)))
 
 
 ; ; Algoritmo

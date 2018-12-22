@@ -1,5 +1,5 @@
 ; Problema-000
-(setf problem0 '((L2 L1 1 25) (L10 L1 4 33) (L1 L2 14 40) (L1 L11 14 55) (L4 L1 16 37))) 
+(setf problem0 '((L2 L1 1 13) (L10 L1 4 33) (L1 L2 14 40) (L1 L11 14 55) (L4 L1 300 400))) 
 
 ; Problema-001
 ; -Tem 82 tarefas.
