@@ -3,6 +3,7 @@
 ; Kevin Batista Corrales, ist194131
 ;(in-package :user)
 
+(load (compile-file "procura.lisp"))
 
 ; Estrutura de dados do state
 (defstruct state
@@ -239,35 +240,31 @@
 ; Função que executa a solução do problem
 (defun faz-afectacao (tasks strategy)
 
-  ;(sort tasks 'compare-3rd)
+  (sort tasks 'compare-3rd)
 
-  ; (print (sondagem-iterativa (cria-problem (makeInitialState tasks)
-  ;                                   (list #'operator)
-  ;                                   :objective? #'objective?
-  ;                                   :custo #'cost)
-  ;                  ))
-  (if 	(eq strategy "ILDS")
-		(print (ilds (cria-problema (makeInitialState tasks)
+	(setf problem (cria-problema (makeInitialState tasks)
                                     (list #'operator)
                                     :objectivo? #'objective?
                                     :heuristica #'heuristic-shifts-quantity
                                     :custo #'cost
-                                    ) 5000) )
+                                    )
+	)
+	(print problem)
+	
+   ;(print (ilds (cria-problema (makeInitialState tasks)
+    ;                                 (list #'operator)
+     ;                                :objectivo? #'objective?
+      ;                               :custo #'cost)
+       ;             1000 ) )
+					
+	(if 	(eq strategy "ILDS")
+		(print (ilds problem 5000) )
 		(if 	(eq strategy "sondagem-iterativa")
-				(print (sondagem-iterativa (cria-problema (makeInitialState tasks)
-                                    (list #'operator)
-                                    :objectivo? #'objective?
-                                    :heuristica #'heuristic-shifts-quantity
-                                    :custo #'cost
-                                    ) ))
-				(print (procura (cria-problema (makeInitialState tasks)
-                                    (list #'operator)
-                                    :objectivo? #'objective?
-                                    :heuristica #'heuristic-shifts-quantity
-                                    :custo #'cost
-                                    ) strategy))
+				(print (sondagem-iterativa problem ))
+				(print (procura problem strategy))
 		)
 	)
+  
   ; (setf s1 (makeInitialState tasks))
   ; (setf s2 (addShift s1))
   ; (print "s2")
@@ -361,24 +358,25 @@
 
 ; ; Algoritmo
 ; Algoritmo de Sondagem Iterativa
-(defun sondagem-iterativa (problem)
+(defun sondagem-iterativa (problema)
   (let* ((*nos-gerados* 0)
 		 (*nos-expandidos* 0)
+		 (tempo-inicio (get-internal-run-time))
+		 (objectivo? (problema-objectivo? problema))
 		 (result nil))
-
     (labels ((beam (state)
-              (cond ((funcall objective? state) (list state))
+              (cond ((funcall objectivo? state) (list state))
                      ((null state) nil)
                     (t
-                     (let* ((sucessores (problem-gera-sucessores problem state))
+                     (let* ((sucessores (problema-gera-sucessores problema state))
                             (num-elem (length sucessores)))
                        (if(equal num-elem 0)
                            nil
                          (beam (nth (random num-elem) sucessores))))))))
              (loop while (null result) do
-               (setf result (beam (problem-state-inicial problem))))
+               (setf result (beam (problema-estado-inicial problema))))
 
-             (return-from sondagem-iterativa (list result *nos-expandidos* *nos-gerados*)))))
+             (return-from sondagem-iterativa (list result (round (/ (- (get-internal-run-time) - tempo-inicio)internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))
 
 ; Algoritmo de ILDS
 
@@ -387,20 +385,21 @@
  #'(lambda (all-states)
 	(stable-sort all-states #'< :key heur)))
 
-(defun ilds (problem maxDepth)
+(defun ilds (problema maxDepth)
  (let ((*nos-gerados* 0)
 		(*nos-expandidos* 0)
 		(tempo-inicio (get-internal-run-time))
 		(max-runtime 300)
        (numMaxDiscrepancia maxDepth)
+	   (objectivo? (problema-objectivo? problema))
        (out-result nil))
 
    (labels ((ildsProbe (state maxDiscrepancia rProfundidade start-time)
-               (let* ((sucessores-nao-ordenados (problem-gera-sucessores problem state))
-		       		   (sucessores (funcall (ilds-sorter (problem-heuristica problem)) sucessores-nao-ordenados))
+               (let* ((sucessores-nao-ordenados (problema-gera-sucessores problema state))
+		       		   (sucessores (funcall (ilds-sorter (problema-heuristica problema)) sucessores-nao-ordenados))
                       (num-elem (list-length sucessores))
                       (result nil))
-                    (cond 	((funcall objective? state) (list state))
+                    (cond 	((funcall objectivo? state) (list state))
                     		((or (= 0 num-elem) (<= (- max-runtime (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) 2.5)) nil)
                     		(t
                     			(setf result nil)
@@ -415,10 +414,12 @@
                 				(return-from ildsProbe result))))))
 
 			(loop for maxDiscrepancia from 0 to numMaxDiscrepancia do
-				(setf out-result (ildsProbe (problem-state-inicial problem) maxDiscrepancia maxDepth tempo-inicio))
+				(setf out-result (ildsProbe (problema-estado-inicial problema) maxDiscrepancia maxDepth tempo-inicio))
 				(when (not (null out-result))
 					(return-from ilds (list out-result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))))
 
 
 ; (load(compile-file "G018.lisp"))
 (load(compile-file "problems.lisp"))
+
+
