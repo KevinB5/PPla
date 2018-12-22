@@ -218,7 +218,7 @@
 		(setq auxState (addShift state)
             states (cons auxState states))
 	)
-    states
+    (values states)
 	)
 )
 
