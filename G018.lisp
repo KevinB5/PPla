@@ -245,12 +245,28 @@
   ;                                   :objectivo? #'objective?
   ;                                   :custo #'cost)
   ;                  ))
-  (print (procura (cria-problema (makeInitialState tasks)
+  (if 	(eq strategy "ILDS")
+		(print (ilds (cria-problema (makeInitialState tasks)
+                                    (list #'operator)
+                                    :objectivo? #'objective?
+                                    :heuristica #'heuristic-shifts-quantity
+                                    :custo #'cost
+                                    ) 500) )
+		(if 	(eq strategy "sondagem-iterativa")
+				(print (sondagem-iterativa (cria-problema (makeInitialState tasks)
+                                    (list #'operator)
+                                    :objectivo? #'objective?
+                                    :heuristica #'heuristic-shifts-quantity
+                                    :custo #'cost
+                                    ) ))
+				(print (procura (cria-problema (makeInitialState tasks)
                                     (list #'operator)
                                     :objectivo? #'objective?
                                     :heuristica #'heuristic-shifts-quantity
                                     :custo #'cost
                                     ) strategy))
+		)
+	)
   ; (setf s1 (makeInitialState tasks))
   ; (setf s2 (addShift s1))
   ; (print "s2")
