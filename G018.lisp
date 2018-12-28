@@ -197,19 +197,19 @@
 
 (defun operator (state)
 	(let ((match 0) auxState states)
-		(cond 
-			((equal nil (state-shifts state)) 
+		(cond
+			((equal nil (state-shifts state))
 				(setq auxState (addShift state)
 				states (cons auxState states)))
-			
+
 			((not (equal nil (state-shifts state)))
 			(loop for shift in (state-shifts state)
-					when (and (< match 1) ( not (equal nil (state-unusedTasks state))))
-				do  				
+					when (< match 1)
+				do
 					(if (and (> (nth 2 (first (state-unusedTasks state))) (lastTime shift))
 						(< (- (nth 3 (first (state-unusedTasks state))) (nth 2 (first shift))) 480))
 							(if (and (equal (first (first (state-unusedTasks state))) (lastPlace shift))
-								(check-time-continuity-equal shift (first (state-unusedTasks state))))
+                       (check-time-continuity-equal shift (first (state-unusedtasks state))))
 									(setq auxState (addTask state (position shift (state-shifts state) :test #'equal))
 										states (cons auxState states)
 										match (+ match 1))
@@ -219,13 +219,13 @@
 											match (+ match 1))
 									)
 							)
-					)			
+					)
 			))
 		)
-	(if (equal match 0) 
+    (if (equal match 0)
 		(setq auxState (addShift state)
            states (cons auxState states))
-	)
+           )
     (values states)
 	)
 )
@@ -246,7 +246,7 @@
 ; Função que executa a solução do problem
 (defun faz-afectacao (tasks strategy)
 
-  (sort tasks 'compare-3rd)
+  (setf tasks (sort tasks 'compare-3rd))
 
 	(setf problem (cria-problema (makeInitialState tasks)
                                     (list #'operator)
@@ -255,18 +255,18 @@
                                     :custo #'cost
                                     )
 	)
-						
+
 	(if 	(equal strategy "ilds")
-		(print (ilds problem 1000) )
+		(setf sol (ilds problem 1000) )
 	)
 	(if 	(equal strategy "sondagem-iterativa")
-		(print (sondagem-iterativa problem) )
+		(setf sol (sondagem-iterativa problem) )
 	)
 	(if (and (not(equal strategy "ilds")) (not(equal strategy "sondagem-iterativa")))
-		(print (procura problem strategy))
-		
+  (setf sol (procura problem strategy :espaco-em-arvore? T))
 	)
-	t
+
+  (print (state-shifts (nth (- (list-length (nth 0 sol)) 1) (nth 0 sol))))
 )
 
 ; Updates the duration of the shift to 6h if it is less than 6h
@@ -386,10 +386,5 @@
 				(setf out-result (ildsProbe (problema-estado-inicial problema) maxDiscrepancia profundidade-maxima tempo-inicio))
 				(when (not (null out-result))
 					(return-from ilds (list out-result (round (/ (- (get-internal-run-time) tempo-inicio) internal-time-units-per-second)) *nos-expandidos* *nos-gerados*)))))))
-
-
-			
-; (load(compile-file "G018.lisp"))
-(load(compile-file "problems.lisp"))
 
 
