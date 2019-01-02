@@ -88,7 +88,6 @@
 
 ; Função que verifica se uma tarefa com localidade não contínua é possível ser adicionada a um turno
 (defun check-time-continuity-different (shift task)
-	(print (first (first shift)))
 	(if (not(equal nil task))
 		(if (listp (nth 0 shift))
 		  (let* ((waiting-time (- (nth 2 task) (nth 3 (nth (- (list-length shift) 1) shift))))
