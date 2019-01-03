@@ -257,6 +257,7 @@
 					(if (and (> (nth 2 (first (state-unusedTasks state))) (lastTime shift))
 						       (checkTask shift (first (state-unusedTasks state)))
 							     (equal (first (first (state-unusedTasks state))) (lastPlace shift))
+								 (check-time-continuity-equal shift (first (state-unusedTasks state)))
                    (< match 1))
 									(setq auxState (addTask state (position shift (state-shifts state) :test #'equal))
 										states (cons auxState states)
